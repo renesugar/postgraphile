@@ -3306,26 +3306,26 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.1.9:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/graceful-readlink/-/graceful-readlink-1.0.1.tgz#4cafad76bc62f02fa039b2f94e9a3dd3a391a725"
 
-graphile-build-pg@4.0.0-beta.5:
-  version "4.0.0-beta.5"
-  resolved "https://registry.yarnpkg.com/graphile-build-pg/-/graphile-build-pg-4.0.0-beta.5.tgz#bee2f1c731f18b02c37b9a80a57c2926c71120f7"
+graphile-build-pg@4.0.0-beta.8:
+  version "4.0.0-beta.8"
+  resolved "https://registry.yarnpkg.com/graphile-build-pg/-/graphile-build-pg-4.0.0-beta.8.tgz#096735a79cf938b1c54bc80aeb46a6712daae4b5"
   dependencies:
     chalk "^2.1.0"
     debug ">=2 <3"
-    graphile-build "4.0.0-beta.5"
+    graphile-build "4.0.0-beta.8"
     graphql-iso-date "^3.2.0"
     jsonwebtoken "^8.1.1"
     lodash ">=4 <5"
     lru-cache "4.1.1"
-    pg-sql2 "2.0.0"
+    pg-sql2 "2.1.0"
     postgres-interval "1.1.1"
 
-graphile-build@4.0.0-beta.5:
-  version "4.0.0-beta.5"
-  resolved "https://registry.yarnpkg.com/graphile-build/-/graphile-build-4.0.0-beta.5.tgz#fb218754c65441a78cc1e3ff38161337b46aa963"
+graphile-build@4.0.0-beta.8:
+  version "4.0.0-beta.8"
+  resolved "https://registry.yarnpkg.com/graphile-build/-/graphile-build-4.0.0-beta.8.tgz#3e1ef87f21c581b7d9418077e677c4769b9e1801"
   dependencies:
     debug ">=2 <3"
-    graphql-parse-resolve-info "4.0.0-beta.5"
+    graphql-parse-resolve-info "4.0.0-beta.8"
     lodash ">=4 <5"
     pluralize "7.0.0"
 
@@ -3400,9 +3400,9 @@ graphql-language-service-utils@^1.1.0:
     graphql-config "1.1.4"
     graphql-language-service-types "^1.1.0"
 
-graphql-parse-resolve-info@4.0.0-beta.5:
-  version "4.0.0-beta.5"
-  resolved "https://registry.yarnpkg.com/graphql-parse-resolve-info/-/graphql-parse-resolve-info-4.0.0-beta.5.tgz#6840f739be7e0d3a166463f5144addd735b84663"
+graphql-parse-resolve-info@4.0.0-beta.8:
+  version "4.0.0-beta.8"
+  resolved "https://registry.yarnpkg.com/graphql-parse-resolve-info/-/graphql-parse-resolve-info-4.0.0-beta.8.tgz#71be1a339ec0e36f26de432e4c77722e7c5c1ff5"
   dependencies:
     debug ">=2 <3"
 
@@ -5092,6 +5092,13 @@ lru-cache@4.1.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
+lru-cache@4.1.3:
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-4.1.3.tgz#a1175cf3496dfc8436c156c334b4955992bce69c"
+  dependencies:
+    pseudomap "^1.0.2"
+    yallist "^2.1.2"
+
 lru-cache@^4.0.1:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-4.1.2.tgz#45234b2e6e2f2b33da125624c4664929a0224c3f"
@@ -5908,9 +5915,9 @@ pg-pool@~2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/pg-pool/-/pg-pool-2.0.3.tgz#c022032c8949f312a4f91fb6409ce04076be3257"
 
-pg-sql2@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/pg-sql2/-/pg-sql2-2.0.0.tgz#9b89c0fc31d99450f08777d5b3501e27f81d3d2e"
+pg-sql2@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/pg-sql2/-/pg-sql2-2.1.0.tgz#f86978278451482099e4f8e8db8b7486ecb67e3f"
   dependencies:
     debug ">=2 <3"
 
@@ -6272,12 +6279,12 @@ postcss@^6.0.0, postcss@^6.0.1, postcss@^6.0.13:
     source-map "^0.6.1"
     supports-color "^5.3.0"
 
-postgraphile-core@4.0.0-beta.5:
-  version "4.0.0-beta.5"
-  resolved "https://registry.yarnpkg.com/postgraphile-core/-/postgraphile-core-4.0.0-beta.5.tgz#b004ad239b69814bccab8b29466ca74806c9c043"
+postgraphile-core@4.0.0-beta.8:
+  version "4.0.0-beta.8"
+  resolved "https://registry.yarnpkg.com/postgraphile-core/-/postgraphile-core-4.0.0-beta.8.tgz#eb196fca611351ab81f79cfb265e7d51775c89ab"
   dependencies:
-    graphile-build "4.0.0-beta.5"
-    graphile-build-pg "4.0.0-beta.5"
+    graphile-build "4.0.0-beta.8"
+    graphile-build-pg "4.0.0-beta.8"
 
 postgres-array@~1.0.0:
   version "1.0.2"
