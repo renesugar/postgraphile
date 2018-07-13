@@ -7,6 +7,8 @@ import * as sql from 'pg-sql2'
 import { $$pgClient } from '../postgres/inventory/pgClientFromContext'
 import { pluginHookFromOptions } from './pluginHook'
 
+const undefinedIfEmpty = (o?: Array<string> | string): undefined | Array<string> | string => o && o.length ? o : undefined
+
 export type WithPostGraphileContextFn = (
   options: {
     pgPool: Pool,
@@ -207,12 +209,16 @@ async function getSettingsForPgClientTransaction({
       if (typeof jwtSecret !== 'string')
         throw new Error('Not allowed to provide a JWT token.')
 
-      if (jwtAudiences && jwtVerifyOptions && jwtVerifyOptions.audience)
+      if (jwtAudiences != null && jwtVerifyOptions && 'audience' in jwtVerifyOptions)
         throw new Error(`Provide either 'jwtAudiences' or 'jwtVerifyOptions.audience' but not both`)
 
       jwtClaims = jwt.verify(jwtToken, jwtSecret, {
-        audience: jwtAudiences || ['postgraphile'],
         ...jwtVerifyOptions,
+        audience: jwtAudiences || (
+          jwtVerifyOptions && ('audience' in (jwtVerifyOptions as object))
+          ? undefinedIfEmpty(jwtVerifyOptions.audience)
+          : ['postgraphile']
+        ),
       })
 
       const roleClaim = getPath(jwtClaims, jwtRole)
@@ -353,9 +359,10 @@ function isPgSettingValid(pgSetting: mixed): boolean {
     return false
   }
   const typeOfPgSetting = typeof pgSetting
-  if (typeOfPgSetting === 'string' || typeOfPgSetting === 'number') {
+  if (typeOfPgSetting === 'string' || typeOfPgSetting === 'number' || typeOfPgSetting === 'boolean') {
     return true
   }
-  throw new Error(`Error converting pgSetting: ${typeof pgSetting} needs to be of type string or number.`)
+  // TODO: booleans!
+  throw new Error(`Error converting pgSetting: ${typeof pgSetting} needs to be of type string, number or boolean.`)
 }
 // tslint:enable no-any

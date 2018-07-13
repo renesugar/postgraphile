@@ -43,6 +43,17 @@ export type PostGraphileOptions = {
   // types & fields. Database mutation will only be possible through Postgres
   // functions.
   disableDefaultMutations?: boolean,
+  // By default, PostGraphile excludes fields, queries and mutations that the
+  // user isn't permitted to access; set this option true to skip these checks
+  // and expose everything.
+  ignoreRBAC?: boolean,
+  // By default, tables and functions that come from extensions are excluded
+  // from the generated GraphQL schema as general applications don't need them
+  // to be exposed to the end user. You can use this flag to include them in
+  // the generated schema. It's recommended that you expose a schema other than
+  // `public` so that the schema is not polluted with extension resources
+  // anyway.
+  includeExtensionResources?: boolean,
   // Enables adding a `stack` field to the error response.  Can be either the
   // boolean `true` (which results in a single stack string) or the string
   // `json` (which causes the stack to become an array with elements for each
@@ -116,6 +127,9 @@ export type PostGraphileOptions = {
   jwtSecret?: string,
   // Options with which to perform JWT verification - see
   // https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
+  // If 'audience' property is unspecified, it will default to
+  // ['postgraphile']; to prevent audience verification set it explicitly to
+  // null.
   /* @middlewareOnly */
   jwtVerifyOptions?: jwt.VerifyOptions,
   // A comma separated list of strings that give a path in the jwt from which
@@ -128,8 +142,8 @@ export type PostGraphileOptions = {
   // form: `my_schema.my_type`. You may use quotes as needed:
   // `"my-special-schema".my_type`.
   jwtPgTypeIdentifier?: string,
-  // The audiences to use when verifing the JWT token. If not set the audience
-  // will be `['postgraphile']`.
+  // [DEPRECATED] The audience to use when verifing the JWT token. Deprecated,
+  // use `jwtVerifyOptions.audience` instead.
   /* @middlewareOnly */
   jwtAudiences?: Array<string>,
   // Some one-to-one relations were previously detected as one-to-many - should

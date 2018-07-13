@@ -92,6 +92,8 @@ program
   .option('-a, --classic-ids', 'use classic global id field name. required to support Relay 1')
   .option('-M, --disable-default-mutations', 'disable default mutations, mutation will only be possible through Postgres functions')
   .option('--simple-collections [omit|both|only]', '"omit" (default) - relay connections only, "only" - simple collections only (no Relay connections), "both" - both')
+  .option('--ignore-rbac', 'by default, PostGraphile excludes fields, queries and mutations that the user isn\'t permitted to access; use this flag to skip these checks and expose everything')
+  .option('--include-extension-resources', 'by default, tables and functions that come from extensions are excluded; use this flag to include them')
 
 pluginHook('cli:flags:add:schema', addFlag)
 
@@ -136,7 +138,7 @@ pluginHook('cli:flags:add:webserver', addFlag)
 program
   .option('-e, --jwt-secret <string>', 'the secret to be used when creating and verifying JWTs. if none is provided auth will be disabled')
   .option('--jwt-verify-algorithms <string>', 'a comma separated list of the names of the allowed jwt token algorithms', (option: string) => option.split(','))
-  .option('-A, --jwt-verify-audience <string>', 'a comma separated list of audiences your jwt token can contain. If no audience is given the audience defaults to `postgraphile`', (option: string) => option.split(','))
+  .option('-A, --jwt-verify-audience <string>', 'a comma separated list of JWT audiences that will be accepted; defaults to \'postgraphile\'. To disable audience verification, set to \'\'.', (option: string) => option.split(','))
   .option('--jwt-verify-clock-tolerance <number>', 'number of seconds to tolerate when checking the nbf and exp claims, to deal with small clock differences among different servers', parseFloat)
   .option('--jwt-verify-id <string>', 'the name of the allowed jwt token id')
   .option('--jwt-verify-ignore-expiration', 'if `true` do not validate the expiration of the token defaults to `false`')
@@ -154,8 +156,8 @@ pluginHook('cli:flags:add', addFlag)
 // Deprecated
 program
   .option('--token <identifier>', 'DEPRECATED: use --jwt-token-identifier instead')
-  .option('--secret <string>', 'DEPRECATED: Use jwt-secret instead')
-  .option('--jwt-audiences <string>', 'DEPRECATED Use jwt-verify-audience instead', (option: string) => option.split(','))
+  .option('--secret <string>', 'DEPRECATED: Use --jwt-secret instead')
+  .option('--jwt-audiences <string>', 'DEPRECATED Use --jwt-verify-audience instead', (option: string) => option.split(','))
 
 pluginHook('cli:flags:add:deprecated', addFlag)
 
@@ -218,6 +220,8 @@ const {
   classicIds = false,
   dynamicJson = false,
   disableDefaultMutations = false,
+  ignoreRbac = false,
+  includeExtensionResources = false,
   exportSchemaJson: exportJsonSchemaPath,
   exportSchemaGraphql: exportGqlSchemaPath,
   showErrorStack,
@@ -312,11 +316,23 @@ const loadPlugins = (rawNames: mixed) => {
   })
 }
 
-if (jwtAudiences && jwtVerifyAudience) {
+if (jwtAudiences != null && jwtVerifyAudience != null) {
   throw new Error(`Provide either '--jwt-audiences' or '-A, --jwt-verify-audience' but not both`)
 }
 
-const jwtVerifyOptions: jwt.VerifyOptions = {
+function trimNulls(obj: object): object {
+  return Object.keys(obj).reduce(
+    (memo, key) => {
+      if (obj[key] != null) {
+        memo[key] = obj[key]
+      }
+      return memo
+    },
+    {},
+  )
+}
+
+const jwtVerifyOptions: jwt.VerifyOptions = trimNulls({
   algorithms: jwtVerifyAlgorithms,
   audience: jwtVerifyAudience,
   clockTolerance: jwtVerifyClockTolerance,
@@ -325,13 +341,15 @@ const jwtVerifyOptions: jwt.VerifyOptions = {
   ignoreNotBefore: jwtVerifyIgnoreNotBefore,
   issuer: jwtVerifyIssuer,
   subject: jwtVerifySubject,
-}
+})
 
 // The options to pass through to the schema builder, or the middleware
 const postgraphileOptions = pluginHook('cli:library:options', Object.assign({}, config['options'], {
   classicIds,
   dynamicJson,
   disableDefaultMutations,
+  ignoreRBAC: ignoreRbac,
+  includeExtensionResources,
   graphqlRoute,
   graphiqlRoute,
   graphiql: !disableGraphiql,

@@ -195,12 +195,22 @@ export default function createPostGraphileHttpRequestHandler(options) {
   const DEFAULT_HANDLE_ERRORS = errors => errors.map(formatError)
   const handleErrors = options.handleErrors || DEFAULT_HANDLE_ERRORS
 
+  function convertKoaBodyParserToConnect(req, res, next) {
+    if (req._koaCtx && req._koaCtx.request && req._koaCtx.request.body) {
+      req._body = true
+      req.body = req._koaCtx.request.body
+    }
+    next()
+  }
+
   // Define a list of middlewares that will get run before our request handler.
   // Note though that none of these middlewares will intercept a request (i.e.
   // not call `next`). Middlewares that handle a request like favicon
   // middleware will result in a promise that never resolves, and we don’t
   // want that.
   const bodyParserMiddlewares = [
+    // Convert koa body to connect-compatible body
+    convertKoaBodyParserToConnect,
     // Parse JSON bodies.
     bodyParser.json({ limit: options.bodySizeLimit }),
     // Parse URL encoded bodies (forms).
@@ -221,6 +231,7 @@ export default function createPostGraphileHttpRequestHandler(options) {
         })
       }
     },
+    (req, res, next) => next(),
   )
 
   // And we really want that function to be await-able
@@ -415,6 +426,9 @@ export default function createPostGraphileHttpRequestHandler(options) {
 
         // Sends the asset at this path. Defaults to a `statusCode` of 200.
         res.statusCode = 200
+        if (req._koaCtx) {
+          req._koaCtx.compress = false
+        }
         await new Promise((resolve, reject) => {
           const stream = sendFile(req, assetPathRelative, {
             index: false,
@@ -451,7 +465,8 @@ export default function createPostGraphileHttpRequestHandler(options) {
       if (pathname === graphiqlRoute) {
         // If we are developing PostGraphile, instead just redirect.
         if (POSTGRAPHILE_ENV === 'development') {
-          res.writeHead(302, { Location: 'http://localhost:5783' })
+          res.statusCode = 302
+          res.setHeader('Location', 'http://localhost:5783')
           res.end()
           return
         }
@@ -753,10 +768,29 @@ export default function createPostGraphileHttpRequestHandler(options) {
       const ctx = a
       const next = b
 
+      // Hack the req object so we can get back to ctx
+      ctx.req._koaCtx = ctx
+
+      const oldEnd = ctx.res.end
+      ctx.res.end = (body) => {
+        ctx.response.body = body
+      }
+
       // Execute our request handler. If an error is thrown, we don’t call
       // `next` with an error. Instead we return the promise and let `koa`
       // handle the error.
-      return requestHandler(ctx.req, ctx.res, next)
+      return (async () => {
+        let result
+        try {
+          result = await requestHandler(ctx.req, ctx.res, next)
+        } finally {
+          ctx.res.end = oldEnd
+          if (ctx.res.statusCode && ctx.res.statusCode !== 200) {
+            ctx.response.status = ctx.res.statusCode
+          }
+        }
+        return result
+      })()
     } else {
       // Set the correct `connect` style variable names. If there was no `next`
       // defined (likely the case if the client is using `http`) we use the
